@@ -1,5 +1,16 @@
 import React, {useState} from 'react';
-import {View, Text, Image, TouchableOpacity, ScrollView, StyleSheet, StatusBar, ImageBackground, Dimensions} from 'react-native';
+import {
+    View,
+    Text,
+    Image,
+    TouchableOpacity,
+    ScrollView,
+    StyleSheet,
+    StatusBar,
+    ImageBackground,
+    Dimensions,
+    TouchableWithoutFeedback,
+} from 'react-native';
 import backgroundImage from '../../assets/model-single-background.png';
 import backArrow from '../../assets/icons/back-arrow.png';
 import shareIcon from '../../assets/icons/share-icon.png';
@@ -9,6 +20,13 @@ import hobbyIcon from '../../assets/icons/hobby-icon.png';
 import experienceIcon from '../../assets/icons/experience.png';
 import heartIcon from '../../assets/icons/heart.png';
 import heartIconWhite from '../../assets/icons/white-heart.png';
+import platBtn from '../../assets/icons/play-btn.png';
+
+import Video from 'react-native-video';
+import model1Video from '../../assets/videos/model1.mp4';
+import model2Video from '../../assets/videos/model2.mp4';
+import model3Video from '../../assets/videos/model3.mp4';
+
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -31,10 +49,46 @@ function ModelSingleContainer(props) {
         require('../../assets/singlModelImages/image14.png'),
         require('../../assets/singlModelImages/image15.png'),
         require('../../assets/singlModelImages/image9.png'),
-
     ]);
 
-    console.log(modelImages, 'sadsa');
+    const [controllers, setControllers] = useState({
+        volume: 1,
+        muted: false,
+        resizeMode: 'contain',
+        duration: 0.0,
+        currentTime: 0.0,
+        paused: true,
+    });
+
+    const [videos, setVideos] = useState([
+        {
+            videoUrl: model1Video,
+        },
+        {
+            videoUrl: model2Video,
+        },
+        {
+            videoUrl: model3Video,
+        },
+    ]);
+    const [videos_status, setVideosStatus] = useState({
+        0: true,
+        1: true,
+        2: true,
+
+    });
+    const [active_video, setActiveVideo] = useState(null);
+
+    let play = (index) => {
+        setActiveVideo(index)
+        let arr ={...videos_status}
+        if(active_video !== null && active_video !== index){
+           arr[active_video] =  true
+        }
+        arr[index] = !arr[index]
+        setVideosStatus(arr)
+
+    }
 
     return (
         <View style={styles.container}>
@@ -157,10 +211,54 @@ function ModelSingleContainer(props) {
                         })
                     }
                 </View>
+                <Text style={styles.myVideos}>My Videos</Text>
+                {
+                    videos.map((item, index) => {
+                        return (
+                            <TouchableOpacity onPress={() => {
+                                play(index)
+                            }} style={{
+                                position: 'relative',
+                                flex: 1,
+                                marginHorizontal: 29,
+                                marginBottom: 15
+                            }}>
+                                <>
+                                    <Video source={item.videoUrl}
+                                           onBuffer={() => {
+                                               console.log('buffering');
+                                           }}
+                                           onError={() => {
+                                               console.log('cant load');
+                                           }}
+                                           volume={100}
+                                           resizeMode='cover'
+                                           paused={videos_status[index]}
+                                           posterResizeMode='cover'
+                                           fullscreen={true}
+                                           poster='https://media.istockphoto.com/photos/beautiful-woman-soft-makeup-and-perfect-skin-picture-id1133213198?k=6&m=1133213198&s=612x612&w=0&h=MQGFE8-cfFi3YpfGwPA6KZoCdSPjsRgfwAgIGCmfZ3w='
+                                           style={styles.backgroundVideo}/>
+
+                                    {
+                                        videos_status[index] ? <TouchableOpacity onPress={() => {
+                                           play(index)
+
+                                        }} style={styles.pausePlayIcon}>
+                                            <Image source={platBtn} style={styles.playBtn}/>
+                                        </TouchableOpacity> : null
+                                    }
+                                    {/*<Text style={styles.videoDescription}>Video Description</Text>*/}
+                                </>
+                            </TouchableOpacity>
+                        );
+                    })
+                }
+                <Text style={styles.thanksWatchingText}>Thanks For Watching</Text>
             </ScrollView>
         </View>
     );
 }
+
 
 const styles = StyleSheet.create({
     container: {
@@ -325,13 +423,53 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-        paddingHorizontal: 22
+        paddingHorizontal: 22,
     },
     myPhotosItem: {
-        width: (windowWidth - 62) / 4,
-        height: (windowWidth - 62) / 4,
-        marginBottom: windowWidth - (4*(windowWidth - 44) / 4)
+        width: (windowWidth - 60) / 4,
+        height: (windowWidth - 60) / 4,
+        marginBottom: (windowWidth - (4 * (windowWidth - 60) / 4 + 44)) / 3,
     },
+    myVideos: {
+        fontSize: 18,
+        color: '#000000',
+        fontFamily: 'bold',
+        textAlign: 'center',
+        paddingTop: 18,
+        marginTop: 10,
+        borderTopWidth: 1,
+        borderColor: '#D8D8D8',
+        paddingBottom: 5,
+        marginHorizontal: 22,
+    },
+    backgroundVideo: {
+        width: '100%',
+        height: 210,
+        borderRadius: 10
+    },
+    playBtn: {
+        width: 56,
+        height: 56,
+    },
+    pausePlayIcon: {
+        position: 'absolute',
+        top: 70,
+        left: (windowWidth - 59 - 40) / 2,
+        zIndex: 1000000000000,
+    },
+    videoDescription: {
+        fontSize: 14,
+        color: '#000000',
+        fontFamily: 'semibold',
+        lineHeight: 17,
+    },
+    thanksWatchingText: {
+        fontSize: 18,
+        color: '#D5117C',
+        fontFamily: 'semibold',
+        lineHeight: 22,
+        textAlign: 'center'
+    }
 });
 
 export const ModelSingle = ModelSingleContainer;

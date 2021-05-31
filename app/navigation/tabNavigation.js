@@ -55,12 +55,10 @@ export default function TabNavigator() {
                 },
             }}
         >
-
             <Tab.Screen name="HomeNavigator" component={HomeNavigator}/>
             <Tab.Screen name="LikesNavigator" component={LikesNavigator}/>
             <Tab.Screen name="CoinNavigator" component={CoinsNavigator}/>
             <Tab.Screen name="ProfileNavigator" component={ProfileNavigator}/>
-
         </Tab.Navigator>
     );
 }
