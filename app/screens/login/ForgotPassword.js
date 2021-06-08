@@ -1,10 +1,43 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, Image, ScrollView, StyleSheet, TextInput} from 'react-native';
 import logo from '../../assets/logo-horizontal.png';
 import GrayBorderedBtn from '../../components/buttons/grayBorderedBtn';
 import GradientBtn from '../../components/buttons/GradientBtn';
+import {mainUrl} from '../../config/mainUrl';
+import axios from 'axios';
 
 function ForgotPasswordContainer(props) {
+
+    const emailValidator = () => {
+        let pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return pattern.test(email);
+    };
+
+    const [email, setEmail] = useState('');
+    const [error, setError] = useState('');
+
+    const handleChange = (event) =>{
+        setEmail(event)
+        setError('');
+    }
+
+
+    const handleSubmit = () => {
+        if(emailValidator()){
+            axios.post(`${mainUrl}forgot/send/email`,{
+                email,
+            }).then((data)=>{
+                // props.navigation.navigate('ForgotPasswordCode');
+                console.log(data,'data')
+            }).catch((error)=>{
+                setError(error.response.data.message)
+                console.log(error.response,'error');
+            })
+        } else {
+            setError('Email is incorrect')
+        }
+    };
+
     return (
         <View style={styles.container}>
             <ScrollView contentContainerStyle={{
@@ -15,22 +48,23 @@ function ForgotPasswordContainer(props) {
             }}>
                 <Image source={logo} style={styles.logo}/>
                 <Text style={styles.title}>Forgot Password?</Text>
-                <Text style={styles.subTitle}>Enter your e-mail address and we’ll send you a code to reset your password</Text>
+                <Text style={styles.subTitle}>Enter your e-mail address and we’ll send you a code to reset your
+                    password</Text>
                 <View style={{
-                    width: '100%'
+                    width: '100%',
                 }}>
                     <Text style={styles.inputLabel}>Email Address</Text>
                     <TextInput
                         placeholder={'example@gmail.com'}
                         style={styles.whiteInput}
                         placeholderTextColor="rgba(0,0,0,.4)"
+                        onChangeText={(e) => handleChange(e)}
                     />
                 </View>
+                <Text style={styles.errorStyle}>{error}</Text>
                 <View style={styles.buttons}>
-                    <GrayBorderedBtn width='45%' name='cancel' />
-                    <GradientBtn width='45%' name='send' goTo={()=>{
-                        props.navigation.navigate('ForgotPasswordCode')
-                    }} />
+                    <GrayBorderedBtn width='45%' name='cancel'/>
+                    <GradientBtn width='45%' name='send' goTo={handleSubmit}/>
                 </View>
             </ScrollView>
         </View>
@@ -51,14 +85,14 @@ const styles = StyleSheet.create({
         color: '#000000',
         fontFamily: 'bold',
         paddingTop: 18,
-        paddingBottom: 12
+        paddingBottom: 12,
     },
-    subTitle:{
+    subTitle: {
         fontSize: 14,
         color: '#000000',
         textAlign: 'center',
         paddingHorizontal: 51,
-        paddingBottom: 24
+        paddingBottom: 24,
     },
     inputLabel: {
         fontSize: 12,
@@ -81,8 +115,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: '100%'
-    }
+        width: '100%',
+    },
+    errorStyle: {
+        color: 'red',
+        fontSize: 12,
+        paddingBottom: 15,
+    },
 });
 
 export const ForgotPassword = ForgotPasswordContainer;

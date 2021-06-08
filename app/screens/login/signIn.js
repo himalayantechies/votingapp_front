@@ -1,12 +1,64 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {View, Text, ScrollView, Image, TouchableOpacity, TextInput, StyleSheet} from 'react-native';
 import logoSmall from '../../assets/logo-horizontal.png';
 import GradientBtn from '../../components/buttons/GradientBtn';
 import facebookIcon from '../../assets/icons/facebook-icon.png';
-import googleIcon from'../../assets/icons/google-icon.png';
+import googleIcon from '../../assets/icons/google-icon.png';
 import linkedinIcon from '../../assets/icons/linkedin-icon.png';
+import {mainUrl} from '../../config/mainUrl';
+import axios from 'axios';
 
-function SignInContainer (props){
+function SignInContainer(props) {
+    const [error, setError] = useState('');
+
+    const [values, setValues] = useState({
+        email: '',
+        password: '',
+    });
+
+    const emailValidator = () => {
+        let pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return pattern.test(values.email);
+    };
+
+    const handleChange = (event, name) => {
+        setValues({
+                ...values,
+                [name]: event,
+            },
+        );
+        setError('')
+    };
+
+    const validation = () => {
+        if(values.email && values.password){
+            if(emailValidator()){
+                if(values.password.length >= 8){
+                    handleSubmit()
+                } else {
+                    setError('Password cannot be less than 8 characters')
+                }
+            } else{
+                setError('Email is incorrect')
+            }
+
+        } else {
+            setError('All fields are required')
+        }
+    }
+
+    const handleSubmit = () => {
+        axios.post(`${mainUrl}auth/signin`,{
+            email: values.email,
+            password: values.password,
+        }).then((data)=>{
+            props.navigation.navigate('tabNavigation');
+        }).catch((error)=>{
+            setError(error.response.data.message)
+            console.log(error.response,'error');
+        })
+    };
+
     return (
         <View style={styles.container}>
             <ScrollView contentContainerStyle={{
@@ -18,13 +70,14 @@ function SignInContainer (props){
                 <Image source={logoSmall} style={styles.logoSmall}/>
                 <Text style={styles.title}>Sign In</Text>
                 <View style={{
-                    width: '100%'
+                    width: '100%',
                 }}>
-                    <Text style={styles.inputLabel}>Email, Phone</Text>
+                    <Text style={styles.inputLabel}>Email</Text>
                     <TextInput
-                        placeholder={'Email, Phone'}
+                        placeholder={'Email'}
                         style={styles.whiteInput}
                         placeholderTextColor="rgba(0,0,0,.4)"
+                        onChangeText={(e) => handleChange(e, 'email')}
                     />
                     <Text style={styles.inputLabel}>Password</Text>
                     <TextInput
@@ -32,13 +85,14 @@ function SignInContainer (props){
                         placeholder={'********'}
                         style={styles.whiteInput}
                         placeholderTextColor="rgba(0,0,0,.4)"
+                        onChangeText={(e) => handleChange(e, 'password')}
                     />
                     <View style={{
                         alignItems: 'flex-end',
-                        marginBottom: 16
+                        marginBottom: 16,
                     }}>
-                        <TouchableOpacity onPress={()=>{
-                            props.navigation.navigate('ForgotPassword')
+                        <TouchableOpacity onPress={() => {
+                            props.navigation.navigate('ForgotPassword');
                         }}>
                             <Text style={{
                                 fontSize: 12,
@@ -49,28 +103,27 @@ function SignInContainer (props){
                             }}>Forgot Password</Text>
                         </TouchableOpacity>
                     </View>
-                    <GradientBtn name='Sign in' goTo={()=>{
-                        props.navigation.navigate('tabNavigation')
-                    }} />
+                    <Text style={styles.errorStyle}>{error}</Text>
+                    <GradientBtn name='Sign in' goTo={validation}/>
                     <Text style={{
                         fontSize: 12,
                         color: '#858792',
                         textAlign: 'center',
-                        paddingVertical: 16
+                        paddingVertical: 16,
                     }}>or connect</Text>
                     <View style={styles.socialLinks}>
                         <TouchableOpacity>
-                            <Image source={facebookIcon} style={[styles.icon,{
-                                marginRight: 32
-                            }]} />
+                            <Image source={facebookIcon} style={[styles.icon, {
+                                marginRight: 32,
+                            }]}/>
                         </TouchableOpacity>
                         <TouchableOpacity>
-                            <Image source={googleIcon} style={styles.icon} />
+                            <Image source={googleIcon} style={styles.icon}/>
                         </TouchableOpacity>
                         <TouchableOpacity>
-                            <Image source={linkedinIcon} style={[styles.icon,{
-                                marginLeft: 32
-                            }]} />
+                            <Image source={linkedinIcon} style={[styles.icon, {
+                                marginLeft: 32,
+                            }]}/>
                         </TouchableOpacity>
                     </View>
                     <View style={{
@@ -82,10 +135,10 @@ function SignInContainer (props){
                         <Text style={{
                             paddingRight: 5,
                             fontSize: 12,
-                            color: '#858792'
+                            color: '#858792',
                         }}>Don't have an account?</Text>
-                        <TouchableOpacity onPress={()=>{
-                            props.navigation.navigate('SignUp')
+                        <TouchableOpacity onPress={() => {
+                            props.navigation.navigate('SignUp');
                         }}>
                             <Text style={{
                                 fontSize: 12,
@@ -99,7 +152,7 @@ function SignInContainer (props){
                 </View>
             </ScrollView>
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -135,14 +188,19 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
     },
     socialLinks: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center'
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     icon: {
         width: 40,
-        height: 40
+        height: 40,
     },
-})
+    errorStyle: {
+        color: 'red',
+        fontSize: 12,
+        paddingBottom: 15,
+    },
+});
 
-export const SignIn = SignInContainer
+export const SignIn = SignInContainer;
